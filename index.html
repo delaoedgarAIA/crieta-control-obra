@@ -473,8 +473,20 @@
             <p>Hotel Casa de Mar - Adecuación Suites & Cocina</p>
             <div class="project-info">
                 <div class="info-card">
-                    <div class="info-label">Presupuesto Total</div>
-                    <div class="info-value">$284,661</div>
+                    <div class="info-label">Cocina (Nivel 1) sin IVA</div>
+                    <div class="info-value">$109,399.44</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Suites (Nivel 2) sin IVA</div>
+                    <div class="info-value">$175,262.00</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">IVA 13%</div>
+                    <div class="info-value">$37,005.99</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Gran Total con IVA</div>
+                    <div class="info-value" style="color:#667eea;font-weight:700;">$321,667.43</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">Área Total</div>
@@ -494,23 +506,23 @@
         <div class="dashboard">
             <div class="metric-card">
                 <div class="metric-title">Presupuesto Inicial</div>
-                <div class="metric-value" id="presupuesto-inicial">$284,661</div>
+                <div class="metric-value" id="presupuesto-inicial">$321,667.43</div>
                 <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
             </div>
             <div class="metric-card">
                 <div class="metric-title">Real Ejecutado</div>
-                <div class="metric-value" id="real-ejecutado">$0</div>
+                <div class="metric-value" id="real-ejecutado">$0.00</div>
                 <div class="progress-bar"><div class="progress-fill" style="width: 0%;"></div></div>
                 <div class="metric-subtext" id="real-porcentaje">0% del presupuesto</div>
             </div>
             <div class="metric-card">
                 <div class="metric-title">Órdenes de Cambio</div>
-                <div class="metric-value" id="odc-total">$0</div>
+                <div class="metric-value" id="odc-total">$0.00</div>
                 <div class="metric-subtext" id="odc-count">0 cambios registrados</div>
             </div>
             <div class="metric-card">
                 <div class="metric-title">Proyección Final</div>
-                <div class="metric-value" id="proyeccion-final">$284,661</div>
+                <div class="metric-value" id="proyeccion-final">$321,667.43</div>
                 <div class="metric-subtext" id="proyeccion-status">Dentro de presupuesto</div>
             </div>
         </div>
@@ -995,8 +1007,8 @@
                             <div class="sugerencia-titulo">${partida.desc}</div>
                             <div class="sugerencia-detalles">
                                 <span class="sugerencia-sector">${partida.sector}</span>
-                                <span class="sugerencia-precio">$${partida.precioUnit.toFixed(2)}/${partida.unidad}</span>
-                                <span style="color: #999; font-size: 12px;">Cant. presup: ${partida.cantidad}</span>
+                                <span class="sugerencia-precio">$${(partida.precioUnit * IVA).toFixed(2)}/${partida.unidad} <span style="font-size:10px;color:#aaa">(+IVA)</span></span>
+                                <span style="color: #999; font-size: 12px;">Sin IVA: $${partida.precioUnit.toFixed(2)} | Cant. presup: ${partida.cantidad}</span>
                             </div>
                         </div>
                     `;
@@ -1198,16 +1210,29 @@
             document.getElementById('odcTable').innerHTML = '';
         }
 
-        function updateDashboard() {
-            const presupTotal = presupuestos.cocina.total + presupuestos.suites.total;
-            const realEjecutado = registros.reduce((sum, r) => sum + r.total, 0);
-            const porcentaje = ((realEjecutado / presupTotal) * 100).toFixed(1);
+        const IVA = 1.13;
 
-            document.getElementById('real-ejecutado').textContent = `$${realEjecutado.toFixed(0)}`;
-            document.getElementById('real-porcentaje').textContent = `${porcentaje}% del presupuesto`;
+        function fmt(num) {
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function updateDashboard() {
+            const presupSinIVA = presupuestos.cocina.total + presupuestos.suites.total;
+            const presupConIVA = presupSinIVA * IVA;
+            const realEjecutadoSinIVA = registros.reduce((sum, r) => sum + r.total, 0);
+            const realEjecutadoConIVA = realEjecutadoSinIVA * IVA;
+            const odcSinIVA = odcActual.reduce((sum, i) => sum + i.total, 0);
+            const odcConIVA = odcSinIVA * IVA;
+            const proyeccionConIVA = realEjecutadoConIVA + (presupConIVA - realEjecutadoConIVA);
+            const porcentaje = ((realEjecutadoConIVA / presupConIVA) * 100).toFixed(2);
+
+            document.getElementById('real-ejecutado').textContent = `$${fmt(realEjecutadoConIVA)}`;
+            document.getElementById('real-porcentaje').textContent = `${porcentaje}% del presupuesto (sin IVA: $${fmt(realEjecutadoSinIVA)})`;
+            document.getElementById('odc-total').textContent = `$${fmt(odcConIVA)}`;
+            document.getElementById('proyeccion-final').textContent = `$${fmt(presupConIVA)}`;
 
             const progressBar = document.querySelector('#real-ejecutado').parentElement.querySelector('.progress-fill');
-            progressBar.style.width = Math.min(porcentaje, 100) + '%';
+            if (progressBar) progressBar.style.width = Math.min(parseFloat(porcentaje), 100) + '%';
         }
 
         function switchTab(tabName) {
