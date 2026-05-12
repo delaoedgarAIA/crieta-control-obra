@@ -531,6 +531,7 @@
             <button class="tab-btn active" onclick="switchTab('captura')">📸 Captura de Datos</button>
             <button class="tab-btn" onclick="switchTab('validacion')">✓ Validación</button>
             <button class="tab-btn" onclick="switchTab('odc')">📋 Órdenes de Cambio</button>
+            <button class="tab-btn" onclick="switchTab('glosario')">📖 Glosario</button>
             <button class="tab-btn" onclick="switchTab('seguimiento')">📊 Seguimiento</button>
         </div>
 
@@ -679,6 +680,39 @@
                 <button class="btn btn-success" onclick="approveOdc()" style="width: 100%; margin-top: 15px;">✓ Aprobar OdC</button>
                 <button class="btn btn-secondary" onclick="resetOdc()" style="width: 100%; margin-top: 10px;">Cancelar</button>
             </div>
+        </div>
+
+        <!-- TAB GLOSARIO -->
+        <div id="glosario" class="tab-content">
+            <h2 style="margin-bottom:5px;">📖 Intérprete de Mensajes de Obra</h2>
+            <p style="color:#666; font-size:13px; margin-bottom:20px;">Pega un mensaje de WhatsApp o anota lo que dijo el maistro. El sistema interpreta ortografía, jerga salvadoreña y términos populares de construcción.</p>
+
+            <div class="form-group">
+                <label>Mensaje del maistro / capataz</label>
+                <textarea id="mensajeObra" placeholder="Ej: maistro dice beisco ya listo, falta boquillar los azulejos del baño, hay q colar la losa mañana, y el ternico ya vio los helados..." style="min-height:120px; font-size:15px;"></textarea>
+            </div>
+
+            <button class="btn btn-primary" onclick="interpretarMensaje()" style="width:100%; margin-bottom:20px;">🔍 Interpretar mensaje</button>
+
+            <div id="resultadoInterpretacion" class="hidden">
+                <div style="background:#f0f1ff; padding:15px; border-radius:8px; margin-bottom:20px;">
+                    <h3 style="color:#667eea; margin-bottom:10px; font-size:15px;">✅ Términos identificados</h3>
+                    <div id="terminosDetectados"></div>
+                </div>
+                <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:20px;">
+                    <h3 style="color:#333; margin-bottom:10px; font-size:15px;">📝 Mensaje interpretado</h3>
+                    <p id="mensajeInterpretado" style="font-size:14px; line-height:1.6; color:#333;"></p>
+                </div>
+                <button class="btn btn-secondary" onclick="usarEnValidacion()" style="width:100%;">→ Usar en Validación</button>
+            </div>
+
+            <hr style="margin:30px 0; border-color:#eee;">
+
+            <h3 style="margin-bottom:15px; font-size:16px;">📚 Glosario Completo</h3>
+            <div style="margin-bottom:15px;">
+                <input type="text" id="buscarGlosario" placeholder="Buscar término..." oninput="filtrarGlosario(this.value)">
+            </div>
+            <div id="tablaGlosario"></div>
         </div>
 
         <!-- TAB 4: SEGUIMIENTO -->
@@ -1318,6 +1352,117 @@
             document.getElementById('odcSugerencias')._selected = null;
         }
 
+
+        // ─── GLOSARIO DE TÉRMINOS DE CONSTRUCCIÓN (El Salvador) ──────────────
+        const glosario = [
+            // PERSONAL / ROLES
+            { terminos: ["maistro","maestro de obra","maistro de obra","capataz","jefe de obra"], termTecnico: "maestro de obra", descripcion: "Jefe de cuadrilla en obra, responsable de supervisar trabajadores" },
+            { terminos: ["ternico","tecnico","el ingeniero","el arq","el arquitecto"], termTecnico: "director de obra / arquitecto", descripcion: "Profesional responsable de la dirección técnica" },
+            { terminos: ["peon","ayudante","cargador"], termTecnico: "peón / ayudante de construcción", descripcion: "Trabajador de apoyo en obra" },
+            { terminos: ["albañil","albaño","albanil"], termTecnico: "albañil", descripcion: "Oficial especializado en mampostería y acabados" },
+            { terminos: ["soldador","el que suelda","fierrero"], termTecnico: "soldador / fierrero", descripcion: "Especialista en estructura metálica y soldadura" },
+            { terminos: ["plomero","el del agua","fontanero"], termTecnico: "plomero / fontanero", descripcion: "Especialista en instalaciones hidrosanitarias" },
+            { terminos: ["electricista","el de la luz"], termTecnico: "electricista", descripcion: "Especialista en instalaciones eléctricas" },
+
+            // MATERIALES - CONCRETO Y ESTRUCTURA
+            { terminos: ["helados","cubitos","espaciadores de concreto","recubridores"], termTecnico: "cubos de concreto / espaciadores (helados)", descripcion: "Cubitos de concreto que separan el acero del encofrado para garantizar recubrimiento mínimo" },
+            { terminos: ["silletas","silletas plasticas","caballitos"], termTecnico: "silletas plásticas / separadores", descripcion: "Separadores plásticos para garantizar recubrimiento del acero de refuerzo" },
+            { terminos: ["colado","colar","colar concreto","vaciado","vaciar"], termTecnico: "vaciado / colado de concreto", descripcion: "Acción de verter concreto en encofrado o formaleta" },
+            { terminos: ["concreto","concreto","cemento","mezcla","pega"], termTecnico: "concreto / mezcla de concreto", descripcion: "Mezcla de cemento, arena, grava y agua" },
+            { terminos: ["formaleta","encofrado","molde","tablero"], termTecnico: "formaleta / encofrado", descripcion: "Molde temporal para vaciar concreto" },
+            { terminos: ["hierro","varilla","acero","fierro","hierro corrugado"], termTecnico: "acero de refuerzo / varilla", descripcion: "Varillas de acero corrugado para reforzar el concreto" },
+            { terminos: ["alambre","alambre negro","atado"], termTecnico: "alambre negro de amarre", descripcion: "Alambre para amarrar varillas de acero" },
+            { terminos: ["rana","saltarín","compactadora","sapo"], termTecnico: "compactadora de suelo (rana/saltarín)", descripcion: "Máquina vibradora para compactar suelo o concreto" },
+            { terminos: ["concretera","mezcladora","chompipa"], termTecnico: "mezcladora de concreto", descripcion: "Máquina para mezclar concreto" },
+            { terminos: ["canguro","bomba de concreto"], termTecnico: "bomba de concreto", descripcion: "Equipo para bombear concreto a zonas de difícil acceso" },
+            { terminos: ["bloque","ladrillo de cemento","bloque de concreto"], termTecnico: "bloque de concreto", descripcion: "Unidad de mampostería de cemento 15x20x40 o 20x20x40 cm" },
+            { terminos: ["ladrillo de barro","ladrillo rojo","ladrillo de obra"], termTecnico: "ladrillo de barro cocido", descripcion: "Unidad de mampostería de arcilla cocida" },
+
+            // MATERIALES - ACABADOS
+            { terminos: ["beisco","base coat","basecoat","base de tablaroca","pasta base"], termTecnico: "basecoat / pasta base (beisco)", descripcion: "Primera capa de compuesto para tablaroca/yeso antes del acabado fino" },
+            { terminos: ["porcelana","boquilla","junta","fragua","porcelanata","sisas"], termTecnico: "fragua / porcelanata (boquilla, junta, porcelana)", descripcion: "Material para rellenar las juntas entre piezas de cerámica o porcelanato" },
+            { terminos: ["purapax","durapass","poliestireno","foam","espuma","aislante"], termTecnico: "poliestireno expandido / aislante térmico (purapax, durapass)", descripcion: "Panel de espuma rígida usado como aislante térmico o acústico" },
+            { terminos: ["duraboard","densboard","densglass","fibrocemento","plyrock"], termTecnico: "tabla densglass / fibrocemento", descripcion: "Panel resistente a humedad para cielos, paredes húmedas o exteriores" },
+            { terminos: ["tablaroca","yeso","drywall","tablayeso","sheetrock"], termTecnico: "tablaroca / drywall (yeso)", descripcion: "Panel de yeso para divisiones y cielos interiores" },
+            { terminos: ["quarry","quarry tile","piso de barro cocido","piso tipo quarry"], termTecnico: "Quarry Tile / piso de gres cocido", descripcion: "Piso cerámico antideslizante de alta resistencia, usado en cocinas industriales" },
+            { terminos: ["cerámica","ceramico","piso","baldosa","azulejo"], termTecnico: "cerámica / azulejo", descripcion: "Piezas de acabado en paredes y pisos" },
+            { terminos: ["porcelanato","porcela","porcelanato rectificado"], termTecnico: "porcelanato", descripcion: "Cerámica de alta densidad y baja absorción, más resistente que el azulejo" },
+            { terminos: ["repello","repellar","rello","emplanchar"], termTecnico: "repello / mortero de recubrimiento", descripcion: "Primera capa de mortero sobre mampostería para nivelar paredes" },
+            { terminos: ["afinado","fino","acabado fino","llana"], termTecnico: "afinado / revoque fino", descripcion: "Segunda capa delgada sobre el repello para dar acabado liso a paredes" },
+            { terminos: ["pintura","pintar","mano de pintura"], termTecnico: "pintura / recubrimiento", descripcion: "Acabado final de paredes y cielos" },
+            { terminos: ["enchape","enchapar","revestimiento","chapear"], termTecnico: "enchape / revestimiento cerámico", descripcion: "Aplicación de cerámica, porcelanato o piedra en paredes o pisos" },
+            { terminos: ["pegamento","pega cerámica","pegaceramic","pegalosa","adhesivo"], termTecnico: "adhesivo / pegamento para cerámica", descripcion: "Mortero adhesivo para fijar piezas cerámicas" },
+            { terminos: ["lija","lijar","lijar tablaroca"], termTecnico: "lijado", descripcion: "Proceso de suavizar superficies antes de pintar o dar acabado final" },
+            { terminos: ["deco coat","decocoat","pasta para tablaroca","joint compound"], termTecnico: "deco coat / compuesto de acabado para tablaroca", descripcion: "Pasta de acabado fino para tablaroca antes de pintar" },
+
+            // ESTRUCTURA Y CUBIERTA
+            { terminos: ["lámina","techo de lámina","cubierta","zinc","lámina de zinc"], termTecnico: "cubierta de lámina zinc-alum", descripcion: "Techo de lámina galvanizada o zinc-aluminio" },
+            { terminos: ["polín","polines","canal c","polin c"], termTecnico: "polín C / canal C metálico", descripcion: "Perfil metálico en forma de C para estructuras de techo" },
+            { terminos: ["botaguas","vierteaguas","tapajunta"], termTecnico: "botaguas / vierteaguas", descripcion: "Pieza metálica para desviar agua en juntas de techo o vanos" },
+            { terminos: ["canaleta","canal","bajada de agua","canal de lluvia"], termTecnico: "canal de aguas lluvias / canaleta", descripcion: "Canal para conducir aguas lluvias del techo" },
+            { terminos: ["viga","viga metálica","viga de concreto","trabe"], termTecnico: "viga estructural", descripcion: "Elemento horizontal que soporta cargas de losa o techo" },
+            { terminos: ["columna","pilar","poste de concreto"], termTecnico: "columna estructural", descripcion: "Elemento vertical que transmite cargas al suelo" },
+            { terminos: ["losa","plancha","entrepiso","techo de concreto"], termTecnico: "losa de concreto / entrepiso", descripcion: "Elemento horizontal de concreto que forma pisos o techos" },
+            { terminos: ["vigueta","viguetas","bovedilla","vigueta bovedilla"], termTecnico: "sistema de vigueta y bovedilla", descripcion: "Sistema de entrepiso con viguetas prefabricadas y bloques de relleno" },
+
+            // INSTALACIONES
+            { terminos: ["tubo","tubería","pvc","tubo pvc","pipe"], termTecnico: "tubería PVC", descripcion: "Tubo plástico para agua potable o aguas negras" },
+            { terminos: ["aguas negras","drenaje","desagüe","alcantarilla"], termTecnico: "aguas negras / drenaje sanitario", descripcion: "Sistema de evacuación de aguas residuales" },
+            { terminos: ["aguas lluvias","pluvial","drenaje pluvial"], termTecnico: "aguas lluvias / drenaje pluvial", descripcion: "Sistema de evacuación de aguas de lluvia" },
+            { terminos: ["agua potable","agua limpia","agua fría","agua caliente"], termTecnico: "agua potable / instalación hidráulica", descripcion: "Red de distribución de agua para consumo" },
+            { terminos: ["trampa de grasa","interceptor","trampa"], termTecnico: "trampa de grasa / interceptor de grasas", descripcion: "Dispositivo que retiene grasas antes de verter a drenaje" },
+            { terminos: ["resumidero","coladera","sifón de piso","piso drain"], termTecnico: "resumidero / coladera de piso", descripcion: "Dispositivo para drenar agua de pisos" },
+            { terminos: ["tablero","panel eléctrico","breaker","caja de breakers"], termTecnico: "tablero eléctrico / panel de distribución", descripcion: "Caja de distribución y protección del sistema eléctrico" },
+            { terminos: ["tomacorriente","enchufe","toma","salida eléctrica"], termTecnico: "tomacorriente / salida eléctrica", descripcion: "Punto de conexión eléctrica en pared" },
+            { terminos: ["apagador","switch","interruptor"], termTecnico: "apagador / interruptor de luz", descripcion: "Dispositivo para encender o apagar luminarias" },
+            { terminos: ["conduit","tubería eléctrica","tubo conduit","tecnoducto"], termTecnico: "conduit / tecnoducto eléctrico", descripcion: "Tubo protector para cableado eléctrico" },
+
+            // HERRAMIENTAS Y EQUIPO
+            { terminos: ["andamio","andamios","burro","caballetes"], termTecnico: "andamio / andamiaje", descripcion: "Estructura temporal para trabajar en altura" },
+            { terminos: ["escalera","escalera de mano","escalera tijera"], termTecnico: "escalera de mano", descripcion: "Herramienta de acceso a altura" },
+            { terminos: ["nivel","nivel de burbuja","niveleta"], termTecnico: "nivel de burbuja / nivel de albañil", descripcion: "Instrumento para verificar horizontales y verticales" },
+            { terminos: ["plomada","plomo","aplomar"], termTecnico: "plomada", descripcion: "Peso colgante para verificar verticalidad" },
+            { terminos: ["flexómetro","cinta","cinta métrica","metro"], termTecnico: "cinta métrica / flexómetro", descripcion: "Instrumento de medición" },
+            { terminos: ["amoladora","esmeril","disco de corte","pulidora"], termTecnico: "amoladora / esmeriladora angular", descripcion: "Herramienta eléctrica para cortar o pulir materiales" },
+            { terminos: ["taladro","perforadora","talado"], termTecnico: "taladro / perforadora", descripcion: "Herramienta para hacer perforaciones" },
+            { terminos: ["cortadora de cerámica","cortadora","guillotina"], termTecnico: "cortadora de cerámica / guillotina", descripcion: "Herramienta para cortar piezas cerámicas" },
+
+            // ACCIONES / PROCESOS
+            { terminos: ["halar","jalar","mover","acarrear"], termTecnico: "acarreo / traslado de material", descripcion: "Transporte de materiales dentro o fuera de obra" },
+            { terminos: ["botar","tirar","desalojar","ripio"], termTecnico: "desalojo de material sobrante / escombros", descripcion: "Retiro de material de desperdicio o demolición" },
+            { terminos: ["demoler","tirar paredes","tumbar","quitar"], termTecnico: "demolición", descripcion: "Derribo o remoción de elementos constructivos existentes" },
+            { terminos: ["fundir","fundir concreto","fundir losa"], termTecnico: "vaciado / colado de concreto", descripcion: "Acción de vaciar concreto en la formaleta o encofrado" },
+            { terminos: ["impermeabilizar","impermeabilización","anti humedad","drizoro","sika"], termTecnico: "impermeabilización", descripcion: "Aplicación de membrana o producto para evitar filtraciones de agua" },
+            { terminos: ["pegar azulejo","enchapar","pegar cerámica","pegar piso"], termTecnico: "instalación de enchape cerámico", descripcion: "Colocación de cerámica, azulejo o porcelanato con adhesivo" },
+            { terminos: ["fraguado","fraguar","sisear","boquillar"], termTecnico: "fraguado / aplicación de fragua (boquilla)", descripcion: "Relleno de juntas entre piezas cerámicas con porcelanata" },
+            { terminos: ["lijar tablaroca","lijar","pulir","emplanechar"], termTecnico: "lijado y acabado de tablaroca", descripcion: "Preparación de superficies de yeso/tablaroca para pintura" },
+            { terminos: ["instalar","montar","colocar","poner"], termTecnico: "instalación / colocación", descripcion: "Acción de poner en su lugar un elemento constructivo" },
+            { terminos: ["medir","medilar","marcar","trazar"], termTecnico: "medición / trazado", descripcion: "Acción de medir y marcar puntos de referencia en obra" },
+            { terminos: ["chequear","revisar","verificar","checar"], termTecnico: "verificación / control de calidad", descripcion: "Revisión del trabajo ejecutado" },
+
+            // TÉRMINOS FINANCIEROS / ADMINISTRATIVOS
+            { terminos: ["anticipo","adelanto","avance","primer pago"], termTecnico: "anticipo / adelanto de obra", descripcion: "Pago inicial para comenzar trabajos" },
+            { terminos: ["estimación","estimacion","avance de obra","acta"], termTecnico: "estimación de avance / acta de avance", descripcion: "Documento que cuantifica el trabajo ejecutado para cobro" },
+            { terminos: ["odc","orden de cambio","cambio","adicional","extra"], termTecnico: "orden de cambio (OdC)", descripcion: "Documento formal que registra trabajos adicionales o modificaciones al contrato" },
+            { terminos: ["contrato","oferta","propuesta","presupuesto"], termTecnico: "contrato / oferta / presupuesto", descripcion: "Documento legal que establece alcance, precio y condiciones del proyecto" },
+        ];
+
+        // Función para interpretar texto de obra (WhatsApp, nota, foto)
+        function interpretarTexto(texto) {
+            const lower = texto.toLowerCase();
+            const resultados = [];
+            glosario.forEach(item => {
+                item.terminos.forEach(t => {
+                    if (lower.includes(t.toLowerCase())) {
+                        if (!resultados.find(r => r.termTecnico === item.termTecnico)) {
+                            resultados.push(item);
+                        }
+                    }
+                });
+            });
+            return resultados;
+        }
+
         const IVA = 1.13;
 
         function fmt(num) {
@@ -1342,6 +1487,78 @@
             const progressBar = document.querySelector('#real-ejecutado').parentElement.querySelector('.progress-fill');
             if (progressBar) progressBar.style.width = Math.min(parseFloat(porcentaje), 100) + '%';
         }
+
+
+        // ─── INTÉRPRETE DE MENSAJES ──────────────────────────────────────────
+        function interpretarMensaje() {
+            const texto = document.getElementById('mensajeObra').value.trim();
+            if (!texto) { alert('Escribe o pega el mensaje del maistro'); return; }
+
+            const detectados = interpretarTexto(texto);
+            const resultDiv = document.getElementById('resultadoInterpretacion');
+            const terminosDiv = document.getElementById('terminosDetectados');
+            const interpretadoDiv = document.getElementById('mensajeInterpretado');
+
+            if (detectados.length === 0) {
+                terminosDiv.innerHTML = '<p style="color:#999;">No se detectaron términos del glosario. Puedes agregar más términos al glosario.</p>';
+            } else {
+                terminosDiv.innerHTML = detectados.map(d => `
+                    <div style="background:white; padding:10px; border-radius:6px; margin-bottom:8px; border-left:3px solid #667eea;">
+                        <div style="font-weight:600; color:#333;">✓ ${d.termTecnico}</div>
+                        <div style="font-size:12px; color:#666; margin-top:3px;">${d.descripcion}</div>
+                        <div style="font-size:11px; color:#999; margin-top:3px;">Términos detectados: ${d.terminos.join(', ')}</div>
+                    </div>`).join('');
+            }
+
+            // Construir mensaje interpretado
+            let mensajeClaro = texto;
+            detectados.forEach(d => {
+                d.terminos.forEach(t => {
+                    const regex = new RegExp(t, 'gi');
+                    mensajeClaro = mensajeClaro.replace(regex, `<strong style="color:#667eea;">${d.termTecnico}</strong>`);
+                });
+            });
+            interpretadoDiv.innerHTML = mensajeClaro;
+
+            resultDiv.classList.remove('hidden');
+            renderTablaGlosario('');
+        }
+
+        function usarEnValidacion() {
+            switchTab('validacion');
+        }
+
+        // ─── TABLA DE GLOSARIO ───────────────────────────────────────────────
+        function renderTablaGlosario(filtro) {
+            const tabla = document.getElementById('tablaGlosario');
+            if (!tabla) return;
+            const items = filtro
+                ? glosario.filter(g =>
+                    g.termTecnico.toLowerCase().includes(filtro.toLowerCase()) ||
+                    g.terminos.some(t => t.toLowerCase().includes(filtro.toLowerCase())) ||
+                    g.descripcion.toLowerCase().includes(filtro.toLowerCase()))
+                : glosario;
+
+            tabla.innerHTML = items.map(g => `
+                <div style="background:white; padding:12px 15px; border-radius:6px; margin-bottom:8px; border:1px solid #eee;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:5px;">
+                        <div style="font-weight:600; color:#333; font-size:14px;">${g.termTecnico}</div>
+                        <div style="font-size:11px; background:#e8e9ff; color:#667eea; padding:2px 8px; border-radius:10px; font-weight:600;">
+                            ${g.terminos.slice(0,3).join(' / ')}${g.terminos.length > 3 ? ' ...' : ''}
+                        </div>
+                    </div>
+                    <div style="font-size:12px; color:#666; margin-top:5px;">${g.descripcion}</div>
+                </div>`).join('');
+        }
+
+        function filtrarGlosario(val) {
+            renderTablaGlosario(val);
+        }
+
+        // Inicializar tabla de glosario cuando se abre el tab
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTablaGlosario('');
+        });
 
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
