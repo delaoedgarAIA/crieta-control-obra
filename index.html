@@ -1224,7 +1224,7 @@
             const odcSinIVA = odcActual.reduce((sum, i) => sum + i.total, 0);
             const odcConIVA = odcSinIVA * IVA;
             const proyeccionConIVA = realEjecutadoConIVA + (presupConIVA - realEjecutadoConIVA);
-            const porcentaje = ((realEjecutadoConIVA / presupConIVA) * 100).toFixed(2);
+            const porcentaje = ((realEjecutadoConIVA / presupConIVA) * 100).toFixed(0);
 
             document.getElementById('real-ejecutado').textContent = `$${fmt(realEjecutadoConIVA)}`;
             document.getElementById('real-porcentaje').textContent = `${porcentaje}% del presupuesto (sin IVA: $${fmt(realEjecutadoSinIVA)})`;
