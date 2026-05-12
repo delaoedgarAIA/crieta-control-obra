@@ -1,0 +1,17 @@
+{
+  "name": "crieta-control-obra",
+  "version": "1.0.0",
+  "description": "Sistema integral de control de obra - Hotel Casa Mar",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 3000"
+  },
+  "keywords": [
+    "control",
+    "obra",
+    "presupuesto",
+    "construccion"
+  ],
+  "author": "Edgar De La O",
+  "license": "MIT"
+}

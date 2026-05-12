@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Integral de Obra - Casa Mar Suites & Cocina</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .project-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .metric-title {
+            font-size: 13px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .metric-subtext {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s ease;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .upload-zone {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .upload-zone:hover {
+            background: #f0f1ff;
+            border-color: #764ba2;
+        }
+
+        .upload-zone.dragging {
+            background: #e8e9ff;
+            border-color: #764ba2;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .detection-result {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .partida-match {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .match-title {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .match-stats {
+            font-size: 12px;
+            color: #666;
+            margin: 8px 0;
+        }
+
+        .odc-preview {
+            background: #f0f1ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .odc-line {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 10px;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .odc-line.header {
+            font-weight: 600;
+            background: #667eea;
+            color: white;
+            border-radius: 6px 6px 0 0;
+            margin-bottom: 0;
+        }
+
+        .odc-line.total {
+            font-weight: 700;
+            background: #e8e9ff;
+            border-top: 2px solid #667eea;
+            margin-top: 10px;
+            border-radius: 0 0 6px 6px;
+        }
+
+        .currency {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-warning {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .sugerencias-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .sugerencia-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s ease;
+        }
+
+        .sugerencia-item:hover {
+            background: #f8f9ff;
+        }
+
+        .sugerencia-item.selected {
+            background: #e8e9ff;
+        }
+
+        .sugerencia-titulo {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .sugerencia-detalles {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .sugerencia-sector {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .sugerencia-precio {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .sugerencia-match {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+
+        .error-msg {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏗️ Control Integral de Obra</h1>
+            <p>Hotel Casa de Mar - Adecuación Suites & Cocina</p>
+            <div class="project-info">
+                <div class="info-card">
+                    <div class="info-label">Presupuesto Total</div>
+                    <div class="info-value">$284,661</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Área Total</div>
+                    <div class="info-value">331.34 m²</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Duración</div>
+                    <div class="info-value">5 meses</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Estado</div>
+                    <div class="info-value"><span class="status-badge status-pending">En Ejecución</span></div>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <div class="metric-card">
+                <div class="metric-title">Presupuesto Inicial</div>
+                <div class="metric-value" id="presupuesto-inicial">$284,661</div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Real Ejecutado</div>
+                <div class="metric-value" id="real-ejecutado">$0</div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 0%;"></div></div>
+                <div class="metric-subtext" id="real-porcentaje">0% del presupuesto</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Órdenes de Cambio</div>
+                <div class="metric-value" id="odc-total">$0</div>
+                <div class="metric-subtext" id="odc-count">0 cambios registrados</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Proyección Final</div>
+                <div class="metric-value" id="proyeccion-final">$284,661</div>
+                <div class="metric-subtext" id="proyeccion-status">Dentro de presupuesto</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('captura')">📸 Captura de Datos</button>
+            <button class="tab-btn" onclick="switchTab('validacion')">✓ Validación</button>
+            <button class="tab-btn" onclick="switchTab('odc')">📋 Órdenes de Cambio</button>
+            <button class="tab-btn" onclick="switchTab('seguimiento')">📊 Seguimiento</button>
+        </div>
+
+        <!-- TAB 1: CAPTURA -->
+        <div id="captura" class="tab-content active">
+            <h2 style="margin-bottom: 20px;">Captura de Datos en Obra</h2>
+            
+            <div class="form-group">
+                <label>📷 Foto de Hoja / Anotaciones (capataz)</label>
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-icon">📸</div>
+                    <p><strong>Arrastra una foto aquí</strong> o haz clic para seleccionar</p>
+                    <p style="font-size: 12px; color: #999; margin-top: 10px;">JPG, PNG - máximo 5MB</p>
+                    <input type="file" id="fileInput" accept="image/*">
+                </div>
+            </div>
+
+            <div id="uploadPreview" class="hidden" style="margin-top: 20px;">
+                <img id="previewImg" style="max-width: 100%; max-height: 400px; border-radius: 8px; margin-bottom: 15px;">
+                <button class="btn btn-primary" onclick="processImage()">
+                    <span class="loader hidden" id="processingLoader"></span>
+                    Analizar con IA
+                </button>
+            </div>
+
+            <div id="detectionResult" class="hidden"></div>
+        </div>
+
+        <!-- TAB 2: VALIDACIÓN -->
+        <div id="validacion" class="tab-content">
+            <h2 style="margin-bottom: 20px;">Validación y Asignación de Partidas</h2>
+            
+            <div class="form-group">
+                <label>Descripción detectada</label>
+                <textarea id="detectedText" placeholder="Ej: Bloque 15, 36 m²" style="background: #f8f9fa;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Partida presupuestada (escribe para buscar)</label>
+                <div style="position: relative;">
+                    <input type="text" id="partidaSearch" placeholder="Ej: pegado de bloque, piso, repello..." autocomplete="off">
+                    <div id="sugerencias" class="sugerencias-dropdown hidden"></div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="number" id="cantidad" step="0.01" placeholder="36">
+                </div>
+                <div class="form-group">
+                    <label>Unidad</label>
+                    <input type="text" id="unidad" readonly style="background: #f8f9fa;">
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Precio unitario presupuestado</label>
+                    <input type="number" id="precioPresupuestado" step="0.01" readonly style="background: #f8f9fa;">
+                </div>
+                <div class="form-group">
+                    <label>Precio actual (si difiere)</label>
+                    <input type="number" id="precioActual" step="0.01" placeholder="Deja vacío si es igual">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>¿Este es trabajo adicional (no en presupuesto)?</label>
+                <select id="esAdicional">
+                    <option value="no">No, está en el presupuesto original</option>
+                    <option value="si">Sí, es obra adicional / cambio</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" id="fechaRegistro">
+            </div>
+
+            <button class="btn btn-success" onclick="validarPartida()" style="width: 100%;">Registrar Validación</button>
+        </div>
+
+        <!-- TAB 3: ÓRDENES DE CAMBIO -->
+        <div id="odc" class="tab-content">
+            <h2 style="margin-bottom: 20px;">Generador Automático de Órdenes de Cambio</h2>
+            
+            <div class="form-group">
+                <label>Nombre del Cambio/Concepto</label>
+                <input type="text" id="odcConcepto" placeholder="Ej: Dormitorio adicional, Ampliación cocina, etc.">
+            </div>
+
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea id="odcDescripcion" placeholder="Describe brevemente el trabajo adicional o cambio"></textarea>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="font-size: 14px; margin-bottom: 15px;">Partidas a incluir en esta OdC</h3>
+                <div id="odcPartidas"></div>
+                <button class="btn btn-secondary" onclick="addPartidaToOdc()" style="margin-top: 10px;">+ Agregar otra partida</button>
+            </div>
+
+            <div id="odcPreview" class="odc-preview hidden">
+                <h3 style="margin-bottom: 15px; color: #667eea;">Vista Previa de OdC</h3>
+                <div id="odcTable"></div>
+                <div style="margin-top: 15px; text-align: right;">
+                    <p style="font-size: 12px; color: #666;">Total OdC:</p>
+                    <p style="font-size: 28px; font-weight: 700; color: #667eea;" id="odcTotalValue">$0</p>
+                </div>
+                <button class="btn btn-success" onclick="approveOdc()" style="width: 100%; margin-top: 15px;">✓ Aprobar OdC</button>
+                <button class="btn btn-secondary" onclick="resetOdc()" style="width: 100%; margin-top: 10px;">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- TAB 4: SEGUIMIENTO -->
+        <div id="seguimiento" class="tab-content">
+            <h2 style="margin-bottom: 20px;">Seguimiento General del Proyecto</h2>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; text-align: center;">
+                <p style="color: #999; font-size: 14px;">Datos en tiempo real se mostrarán aquí conforme se registren validaciones y órdenes de cambio.</p>
+                <p style="color: #999; font-size: 12px; margin-top: 10px;">Incluirá: gráficos de ejecución, variaciones, cronograma, flujo de caja.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATOS PRESUPUESTARIOS COMPILADOS
+        const presupuestos = {
+            cocina: {
+                nombre: "COCINA",
+                total: 109399.44,
+                partidas: [
+                    { id: "1.01", desc: "Desmontaje de ventana", unidad: "und", precioUnit: 35, cantidad: 2 },
+                    { id: "5.01", desc: "PB-15 pared de bloque", unidad: "m2", precioUnit: 68.10, cantidad: 93.88 },
+                    { id: "5.03", desc: "PB-20 pared de bloque", unidad: "m2", precioUnit: 82.91, cantidad: 80.06 },
+                    { id: "8.01", desc: "Repello de paredes", unidad: "m2", precioUnit: 15.18, cantidad: 150.27 },
+                    { id: "9.05", desc: "Piso Quarry Tile cocina", unidad: "m2", precioUnit: 39.60, cantidad: 39.44 },
+                    { id: "14.01", desc: "Inodoro servicio clientes", unidad: "und", precioUnit: 192, cantidad: 5 },
+                    { id: "15.10", desc: "Salida de luces", unidad: "U", precioUnit: 98.05, cantidad: 26 }
+                ]
+            },
+            suites: {
+                nombre: "SUITES",
+                total: 175262.00,
+                partidas: [
+                    { id: "5.01", desc: "PB-10 pared de bloque", unidad: "m2", precioUnit: 50.72, cantidad: 64 },
+                    { id: "5.02", desc: "PB-15 pared de bloque", unidad: "m2", precioUnit: 68.10, cantidad: 45.02 },
+                    { id: "4.02", desc: "Entrepiso vigueta y bovedilla VT-15", unidad: "m2", precioUnit: 79.45, cantidad: 140.40 },
+                    { id: "9.02", desc: "Piso porcelanato 60x60", unidad: "m2", precioUnit: 51.24, cantidad: 94.09 },
+                    { id: "12.02", desc: "Cielo tablaroca", unidad: "m2", precioUnit: 31.54, cantidad: 125.04 },
+                    { id: "14.08", desc: "Tina empotrada", unidad: "und", precioUnit: 964.60, cantidad: 1 },
+                    { id: "15.15", desc: "Salida de luces", unidad: "U", precioUnit: 98.05, cantidad: 81 }
+                ]
+            }
+        };
+
+        let todasPartidas = [];
+        let registros = [];
+        let odcActual = [];
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            // Compilar todas las partidas
+            todasPartidas = [
+                ...presupuestos.cocina.partidas.map(p => ({ ...p, sector: 'COCINA' })),
+                ...presupuestos.suites.partidas.map(p => ({ ...p, sector: 'SUITES' }))
+            ];
+
+            // Setup búsqueda inteligente
+            setupBusquedaInteligente();
+
+            // Rellenar select de partidas (para OdC si lo usamos después)
+            const select = document.getElementById('partidaSelect');
+            if (select) {
+                todasPartidas.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.textContent = `[${p.sector}] ${p.desc} (${p.unidad})`;
+                    select.appendChild(option);
+                });
+
+                select.addEventListener('change', (e) => {
+                    const partida = todasPartidas.find(p => p.id === e.target.value);
+                    if (partida) {
+                        document.getElementById('precioPresupuestado').value = partida.precioUnit.toFixed(2);
+                    }
+                });
+            }
+
+            // Setup upload
+            setupUpload();
+            
+            // Fecha actual
+            document.getElementById('fechaRegistro').valueAsDate = new Date();
+        });
+
+        function setupBusquedaInteligente() {
+            const input = document.getElementById('partidaSearch');
+            const dropdown = document.getElementById('sugerencias');
+            let partidaSeleccionada = null;
+
+            input.addEventListener('input', (e) => {
+                const busqueda = e.target.value.toLowerCase().trim();
+
+                if (busqueda.length === 0) {
+                    dropdown.classList.add('hidden');
+                    return;
+                }
+
+                // Filtrar partidas que coincidan
+                const coincidencias = todasPartidas.filter(p => {
+                    const descripcion = p.desc.toLowerCase();
+                    const id = p.id.toLowerCase();
+                    return descripcion.includes(busqueda) || id.includes(busqueda);
+                });
+
+                if (coincidencias.length === 0) {
+                    dropdown.classList.add('hidden');
+                    return;
+                }
+
+                // Renderizar sugerencias
+                let html = '';
+                coincidencias.forEach((partida, idx) => {
+                    const esSeleccionada = partidaSeleccionada && partidaSeleccionada.id === partida.id;
+                    html += `
+                        <div class="sugerencia-item ${esSeleccionada ? 'selected' : ''}" onclick="selectarPartida(event, ${idx})">
+                            <div class="sugerencia-titulo">${partida.desc}</div>
+                            <div class="sugerencia-detalles">
+                                <span class="sugerencia-sector">${partida.sector}</span>
+                                <span class="sugerencia-precio">$${partida.precioUnit.toFixed(2)}/${partida.unidad}</span>
+                                <span style="color: #999; font-size: 12px;">Cant. presup: ${partida.cantidad}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                dropdown.innerHTML = html;
+                dropdown.classList.remove('hidden');
+
+                // Guardar referencias para onClick
+                dropdown._coincidencias = coincidencias;
+            });
+
+            // Cerrar dropdown si clickea afuera
+            document.addEventListener('click', (e) => {
+                if (e.target !== input && e.target.parentElement !== input) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        function selectarPartida(event, indice) {
+            const dropdown = document.getElementById('sugerencias');
+            const coincidencias = dropdown._coincidencias;
+            const partida = coincidencias[indice];
+
+            // Llenar campos
+            document.getElementById('partidaSearch').value = partida.desc;
+            document.getElementById('unidad').value = partida.unidad;
+            document.getElementById('precioPresupuestado').value = partida.precioUnit.toFixed(2);
+            document.getElementById('cantidad').value = '';
+            document.getElementById('cantidad').focus();
+
+            // Guardar selección
+            dropdown._partidaSeleccionada = partida;
+
+            // Cerrar dropdown
+            dropdown.classList.add('hidden');
+        }
+
+        function setupUpload() {
+            const uploadZone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadZone.addEventListener('click', () => fileInput.click());
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragging');
+            });
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('dragging');
+            });
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragging');
+                handleFiles(e.dataTransfer.files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+        }
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('uploadPreview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function processImage() {
+            const loader = document.getElementById('processingLoader');
+            loader.classList.remove('hidden');
+
+            // Simulación: Claude analizaría la imagen realmente
+            setTimeout(() => {
+                document.getElementById('detectedText').value = "Bloque 15, 36 m² para pared adicional. Repello 71 m², Losa piso 71 m², Techo armadura 71 m²";
+                switchTab('validacion');
+                loader.classList.add('hidden');
+            }, 1500);
+        }
+
+        function validarPartida() {
+            const cantidad = parseFloat(document.getElementById('cantidad').value);
+            const precioPresupuestado = parseFloat(document.getElementById('precioPresupuestado').value);
+            const precioActual = document.getElementById('precioActual').value ? parseFloat(document.getElementById('precioActual').value) : precioPresupuestado;
+            const esAdicional = document.getElementById('esAdicional').value === 'si';
+            const fecha = document.getElementById('fechaRegistro').value;
+            
+            // Obtener partida seleccionada de la búsqueda
+            const dropdown = document.getElementById('sugerencias');
+            const partida = dropdown._partidaSeleccionada;
+
+            if (!partida || !cantidad) {
+                alert('Por favor selecciona una partida de las sugerencias y escribe la cantidad');
+                return;
+            }
+
+            const total = cantidad * precioActual;
+
+            const registro = {
+                id: Date.now(),
+                partida,
+                cantidad,
+                precioPresupuestado,
+                precioActual,
+                total,
+                esAdicional,
+                fecha,
+                variacion: ((precioActual - precioPresupuestado) / precioPresupuestado * 100).toFixed(2)
+            };
+
+            registros.push(registro);
+            alert('✓ Partida registrada: ' + partida.desc + ' - ' + cantidad + ' ' + partida.unidad);
+
+            // Limpiar form
+            document.getElementById('partidaSearch').value = '';
+            document.getElementById('cantidad').value = '';
+            document.getElementById('precioActual').value = '';
+            document.getElementById('unidad').value = '';
+            document.getElementById('esAdicional').value = 'no';
+            document.getElementById('sugerencias').classList.add('hidden');
+
+            updateDashboard();
+        }
+
+        function addPartidaToOdc() {
+            const cantidad = parseFloat(document.getElementById('cantidad').value);
+            const precioActual = parseFloat(document.getElementById('precioActual').value || document.getElementById('precioPresupuestado').value);
+            const partidaId = document.getElementById('partidaSelect').value;
+
+            if (!partidaId || !cantidad) {
+                alert('Selecciona partida y cantidad');
+                return;
+            }
+
+            const partida = todasPartidas.find(p => p.id === partidaId);
+            odcActual.push({
+                partida: partida.desc,
+                cantidad,
+                precio: precioActual,
+                total: cantidad * precioActual
+            });
+
+            renderOdcPreview();
+        }
+
+        function renderOdcPreview() {
+            const preview = document.getElementById('odcPreview');
+            const table = document.getElementById('odcTable');
+            
+            if (odcActual.length === 0) {
+                preview.classList.add('hidden');
+                return;
+            }
+
+            let html = '<div class="odc-line header"><div>Partida</div><div>Cantidad</div><div>Precio</div><div>Total</div></div>';
+            let total = 0;
+
+            odcActual.forEach((item, idx) => {
+                html += `<div class="odc-line">
+                    <div>${item.partida}</div>
+                    <div>${item.cantidad}</div>
+                    <div><span class="currency">$${item.precio.toFixed(2)}</span></div>
+                    <div><span class="currency">$${item.total.toFixed(2)}</span></div>
+                </div>`;
+                total += item.total;
+            });
+
+            html += `<div class="odc-line total">
+                <div colspan="3" style="font-weight: 700;">TOTAL OdC</div>
+                <div><span class="currency">$${total.toFixed(2)}</span></div>
+            </div>`;
+
+            table.innerHTML = html;
+            document.getElementById('odcTotalValue').textContent = `$${total.toFixed(2)}`;
+            preview.classList.remove('hidden');
+        }
+
+        function approveOdc() {
+            const concepto = document.getElementById('odcConcepto').value;
+            if (!concepto || odcActual.length === 0) {
+                alert('Completa concepto y partidas');
+                return;
+            }
+
+            alert('✓ OdC #' + (Math.floor(Math.random() * 1000) + 1) + ' aprobada');
+            resetOdc();
+        }
+
+        function resetOdc() {
+            odcActual = [];
+            document.getElementById('odcConcepto').value = '';
+            document.getElementById('odcDescripcion').value = '';
+            document.getElementById('odcPreview').classList.add('hidden');
+            document.getElementById('odcTable').innerHTML = '';
+        }
+
+        function updateDashboard() {
+            const presupTotal = presupuestos.cocina.total + presupuestos.suites.total;
+            const realEjecutado = registros.reduce((sum, r) => sum + r.total, 0);
+            const porcentaje = ((realEjecutado / presupTotal) * 100).toFixed(1);
+
+            document.getElementById('real-ejecutado').textContent = `$${realEjecutado.toFixed(0)}`;
+            document.getElementById('real-porcentaje').textContent = `${porcentaje}% del presupuesto`;
+
+            const progressBar = document.querySelector('#real-ejecutado').parentElement.querySelector('.progress-fill');
+            progressBar.style.width = Math.min(porcentaje, 100) + '%';
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
